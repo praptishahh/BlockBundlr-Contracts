@@ -8,9 +8,6 @@ pragma solidity ^0.8.19;
  */
 contract BatchTransactions {
     
-    // Owner functionality
-    address private _owner;
-    
     // Reentrancy guard
     uint256 private constant _NOT_ENTERED = 1;
     uint256 private constant _ENTERED = 2;
@@ -19,13 +16,7 @@ contract BatchTransactions {
     // Pausable functionality
     bool private _paused;
     
-    // Ownable events and modifiers
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    
-    modifier onlyOwner() {
-        require(owner() == msg.sender, "Ownable: caller is not the owner");
-        _;
-    }
+    // Events and modifiers
     
     // Reentrancy guard modifiers
     modifier nonReentrant() {
@@ -49,25 +40,7 @@ contract BatchTransactions {
         _;
     }
     
-    // Ownable functions
-    function owner() public view returns (address) {
-        return _owner;
-    }
-    
-    function renounceOwnership() public onlyOwner {
-        _transferOwnership(address(0));
-    }
-    
-    function transferOwnership(address newOwner) public onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
-        _transferOwnership(newOwner);
-    }
-    
-    function _transferOwnership(address newOwner) internal {
-        address oldOwner = _owner;
-        _owner = newOwner;
-        emit OwnershipTransferred(oldOwner, newOwner);
-    }
+    // Administrative functions removed - contract is now ownerless
     
     // Pausable functions
     function paused() public view returns (bool) {
@@ -115,7 +88,7 @@ contract BatchTransactions {
     
     // Modifiers
     modifier onlyAuthorized() {
-        require(authorizedExecutors[msg.sender] || msg.sender == owner(), "Not authorized");
+        require(authorizedExecutors[msg.sender], "Not authorized");
         _;
     }
     
@@ -125,7 +98,6 @@ contract BatchTransactions {
     }
     
     constructor() {
-        _transferOwnership(msg.sender);
         _status = _NOT_ENTERED;
         authorizedExecutors[msg.sender] = true;
     }
@@ -382,78 +354,8 @@ contract BatchTransactions {
         return success;
     }
     
-    /**
-     * @dev Authorize an address to execute batches
-     * @param executor Address to authorize
-     */
-    function authorizeExecutor(address executor) external onlyOwner {
-        require(executor != address(0), "Invalid executor address");
-        authorizedExecutors[executor] = true;
-    }
-    
-    /**
-     * @dev Revoke authorization for an address
-     * @param executor Address to revoke
-     */
-    function revokeExecutor(address executor) external onlyOwner {
-        authorizedExecutors[executor] = false;
-    }
-    
-    /**
-     * @dev Set maximum batch size
-     * @param newMaxBatchSize New maximum batch size
-     */
-    function setMaxBatchSize(uint256 newMaxBatchSize) external onlyOwner {
-        require(newMaxBatchSize > 0 && newMaxBatchSize <= 100, "Invalid batch size");
-        maxBatchSize = newMaxBatchSize;
-    }
-    
-    /**
-     * @dev Set maximum gas per transaction
-     * @param newMaxGas New maximum gas per transaction
-     */
-    function setMaxGasPerTransaction(uint256 newMaxGas) external onlyOwner {
-        require(newMaxGas > 0, "Invalid gas limit");
-        maxGasPerTransaction = newMaxGas;
-    }
-    
-    /**
-     * @dev Pause contract functionality
-     */
-    function pause() external onlyOwner {
-        _pause();
-    }
-    
-    /**
-     * @dev Unpause contract functionality
-     */
-    function unpause() external onlyOwner {
-        _unpause();
-    }
-    
-    /**
-     * @dev Withdraw accumulated ETH from the contract
-     * @param to Address to send ETH to
-     * @param amount Amount to withdraw
-     */
-    function withdraw(address payable to, uint256 amount) external onlyOwner {
-        require(to != address(0), "Invalid address");
-        require(amount <= address(this).balance, "Insufficient balance");
-        
-        to.transfer(amount);
-        emit FundsWithdrawn(to, amount);
-    }
-    
-    /**
-     * @dev Emergency withdraw all ETH
-     * @param to Address to send ETH to
-     */
-    function emergencyWithdraw(address payable to) external onlyOwner {
-        require(to != address(0), "Invalid address");
-        uint256 balance = address(this).balance;
-        to.transfer(balance);
-        emit FundsWithdrawn(to, balance);
-    }
+    // Administrative functions removed - contract is now ownerless and immutable
+    // Authorization can only be set during deployment in the constructor
     
     /**
      * @dev Get contract balance
@@ -469,7 +371,7 @@ contract BatchTransactions {
      * @return authorized Whether the address is authorized
      */
     function isAuthorized(address executor) external view returns (bool authorized) {
-        return authorizedExecutors[executor] || executor == owner();
+        return authorizedExecutors[executor];
     }
     
     // Fallback function to receive ETH
