@@ -83,14 +83,7 @@ contract BatchTransactions {
     uint256 public maxGasPerTransaction = 500000; // Maximum gas per transaction
     
     // Mappings
-    mapping(address => bool) public authorizedExecutors;
     mapping(uint256 => address) public batchExecutors;
-    
-    // Modifiers
-    modifier onlyAuthorized() {
-        require(authorizedExecutors[msg.sender], "Not authorized");
-        _;
-    }
     
     modifier validBatchSize(uint256 size) {
         require(size > 0 && size <= maxBatchSize, "Invalid batch size");
@@ -99,7 +92,6 @@ contract BatchTransactions {
     
     constructor() {
         _status = _NOT_ENTERED;
-        authorizedExecutors[msg.sender] = true;
     }
     
     /**
@@ -116,7 +108,6 @@ contract BatchTransactions {
         payable 
         nonReentrant 
         whenNotPaused 
-        onlyAuthorized 
         validBatchSize(transactions.length)
         returns (BatchResult[] memory results) 
     {
@@ -242,7 +233,6 @@ contract BatchTransactions {
         payable 
         nonReentrant 
         whenNotPaused 
-        onlyAuthorized 
         validBatchSize(transactions.length)
         returns (BatchResult[] memory results) 
     {
@@ -318,7 +308,6 @@ contract BatchTransactions {
         payable 
         nonReentrant 
         whenNotPaused 
-        onlyAuthorized 
         validBatchSize(recipients.length)
         returns (bool[] memory success) 
     {
@@ -355,7 +344,7 @@ contract BatchTransactions {
     }
     
     // Administrative functions removed - contract is now ownerless and immutable
-    // Authorization can only be set during deployment in the constructor
+    // All batch functions are publicly accessible
     
     /**
      * @dev Get contract balance
@@ -365,14 +354,6 @@ contract BatchTransactions {
         return address(this).balance;
     }
     
-    /**
-     * @dev Check if address is authorized
-     * @param executor Address to check
-     * @return authorized Whether the address is authorized
-     */
-    function isAuthorized(address executor) external view returns (bool authorized) {
-        return authorizedExecutors[executor];
-    }
     
     // Fallback function to receive ETH
     receive() external payable {}

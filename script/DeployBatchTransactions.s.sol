@@ -25,7 +25,7 @@ contract DeployBatchTransactionsSimple is Script {
         
         console.log("BatchTransactions deployed at:", address(batchContract));
         console.log("Contract is now ownerless and immutable");
-        console.log("Deployer is automatically authorized as executor");
+        console.log("All addresses can execute batch transactions");
         console.log("Max batch size:", batchContract.maxBatchSize());
         console.log("Max gas per transaction:", batchContract.maxGasPerTransaction());
         
@@ -39,7 +39,7 @@ contract DeployBatchTransactionsSimple is Script {
         console.log("Contract Address:", address(batchContract));
         console.log("Network: Rootstock");
         console.log("Contract Type: Ownerless/Immutable");
-        console.log("Authorized Executor: Deployer");
+        console.log("Access: Public (Any address can execute)");
         console.log("========================\n");
     }
 }
